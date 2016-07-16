@@ -5,13 +5,13 @@ In this project, called Peticodiac, we use many-core devices (such as GPUs) to a
 ## Primitive Operations
 The primitive operations of the general simplex procedure include:
 
-1. *checkBounds*: finds "broken" variables by checking for bounds violations of the basic variables
+1. *check bounds*: finds "broken" variables by checking for bounds violations of the basic variables
  
-2. *findSuitable*: finds a suitable non-basic variable whose assignment may be tweaked in order to correct the violation
+2. *find suitable*: finds a suitable non-basic variable whose assignment may be tweaked in order to correct the violation
  
 3. *pivot*: swaps the basic (broken) and non-basic (suitable) variables, updates the tableau, and updates the assignment of the broken variable
 
-4. *updateAssignment*: computes the new assignment of all the basic variables
+4. *update assignment*: computes the new assignment of all the basic variables
 
 ## Work-in-progress
 
