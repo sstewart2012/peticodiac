@@ -27,3 +27,8 @@
 *.exe
 *.out
 *.app
+peticodiac
+
+# Project Environment
+*.swp
+.DS_Store

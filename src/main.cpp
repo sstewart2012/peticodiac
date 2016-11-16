@@ -8,8 +8,10 @@
 #include "timing.h"
 
 using solver::Solver;
-using solver::SolverProfiler;
 using solver::SolverType;
+#ifdef PROFILER_ENABLED
+using solver::SolverProfiler;
+#endif
 
 void print_solution(const Solver &s) {
   const std::vector<float> solution = s.solution();
@@ -86,12 +88,11 @@ int main(const int argc, const char** argv) {
     solver = Solver::create(SolverType::CPU_LAZY, num_vars, num_constrs);
   else if (solver_type == 3)
     solver = Solver::create(SolverType::CUDA, num_vars, num_constrs);
-  
+
   if (solver != nullptr) {
     test_random(solver, num_vars, num_constrs);
     delete solver;
   }
-  
+
   exit(EXIT_SUCCESS);
 }
-
