@@ -33,7 +33,7 @@ SOLVER_TYPE: specify the solver type
 Example:
 # Determine fesibility for a linear equation with 3 non-basic variables
 # and 1 constraint using the CPU-Eager solver
-# x0 + x1 + s0 = 0
+# x0 + x1 + x2 + s0 = 0
 # l <= s0 <= u, where l and u are randomly generated
 ./peticodiac 3 1 1
 ```
