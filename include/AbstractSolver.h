@@ -1,12 +1,16 @@
 #ifndef ABSTRACTSOLVER_H_
 #define ABSTRACTSOLVER_H_
 
+#include <string>
 #include <map>
 #include <set>
 #include <vector>
 #include <cassert>
-#include <cuda_runtime.h>
 #include "timing.h"
+
+#ifdef CUDA_ENABLED
+#include <cuda_runtime.h>
+#endif /* CUDA_ENABLED */
 
 #define PRINT_STEP_FREQ 1000
 #define OFFSET(row, col, ncols) (row * ncols + col)
@@ -220,6 +224,7 @@ class CpuEagerSolver : public CpuSolver {
 
 };
 
+#ifdef CUDA_ENABLED
 class CudaSolver : public CpuSolver {
  public:
   CudaSolver(const int num_vars, const int num_constrs, const int device_id);
@@ -351,6 +356,8 @@ class SolverProfiler : public Solver {
  private:
   Solver &solver;
 };
+
+#endif /* CUDA_ENABLED */
 
 }  // namespace solver
 
