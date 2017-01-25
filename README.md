@@ -14,12 +14,28 @@ The primitive operations of the general simplex procedure include:
 4. *update assignment*: computes the new assignment of all the basic variables
 
 ## User Guide
-If you are using MacOS X, install the GNU gcc6 compiler first.
+If you are using MacOS X, install the GNU gcc6 compiler first, and ensure the OpenMP library is installed.
 ```
 brew install homebrew/versions/gcc6
 ```
 
-Execute the makefile, and execute the peticodiac program
+Create an out-of-place build using CMake. Make sure the project directory is clean and the CMakeCache.txt does not exist.
+This builds the project without CUDA support
+```
+# At the project root: peticodiac
+mkdir build
+cd build
+cmake ..
+make
+```
+
+To build the project with CUDA support, pass in the CUDA flag.
+```
+cmake .. -DCUDA=ON
+make
+```
+
+The `peticodiac` binary is generated in `peticodiac/bin`
 ```
 Usage:
 ./peticodiac NUM_OF_VARIABLES NUM_OF_CONSTRAINTS SOLVER_TYPE
@@ -31,7 +47,7 @@ SOLVER_TYPE: specify the solver type
              3: CUDA
 
 Example:
-# Determine fesibility for a linear equation with 3 non-basic variables
+# Determine feasibility for a linear equation with 3 non-basic variables
 # and 1 constraint using the CPU-Eager solver
 # x0 + x1 + x2 + s0 = 0
 # l <= s0 <= u, where l and u are randomly generated

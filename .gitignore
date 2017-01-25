@@ -32,3 +32,6 @@ peticodiac
 # Project Environment
 *.swp
 .DS_Store
+*_playground
+build
+bin

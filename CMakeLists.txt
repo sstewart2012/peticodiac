@@ -1,10 +1,33 @@
 cmake_minimum_required(VERSION 2.8)
+
+if (${APPLE})
+  set(CMAKE_CXX_COMPILER "g++-6")
+endif()
+
 project(peticodiac)
-find_package(CUDA QUIET REQUIRED)
-add_definitions(-std=c++11)
-list(APPEND CUDA_NVCC_FLAGS "-O3;-std=c++11")
-SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+
+option(CUDA "Enable CUDA Support" OFF)
+
+set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+
 include_directories(include)
-CUDA_ADD_EXECUTABLE(peticodiac src/main.cpp src/CpuSolver.cpp src/CudaSolver.cu src/generalSimplex.cu src/Solver.cpp)
 
+if (CUDA)
+  find_package(CUDA QUIET REQUIRED)
+endif()
 
+if (CUDA)
+  add_definitions(-std=c++11 -DCUDA_ENABLED=1)
+  list(APPEND CUDA_NVCC_FLAGS "-O3;-std=c++11")
+  SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+  CUDA_ADD_EXECUTABLE(peticodiac src/main.cpp src/CpuSolver.cpp src/CudaSolver.cu src/generalSimplex.cu src/Solver.cpp)
+else()
+  set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -DDEBUG -std=c++11 -fopenmp")
+  set(GCC_EXE_LINKER_FLAGS "-fopenmp")
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_EXE_LINKER_FLAGS}")
+  add_executable(peticodiac src/main.cpp src/CpuSolver.cpp src/Solver.cpp)
+endif()
