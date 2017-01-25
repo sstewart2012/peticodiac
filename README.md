@@ -20,7 +20,7 @@ brew install homebrew/versions/gcc6
 ```
 
 Create an out-of-place build using CMake. Make sure the project directory is clean and the CMakeCache.txt does not exist.
-This builds the project without CUDA support
+This builds the project with CUDA support
 ```
 # At the project root: peticodiac
 mkdir build
@@ -29,9 +29,9 @@ cmake ..
 make
 ```
 
-To build the project with CUDA support, pass in the CUDA flag.
+To build the project without CUDA support, pass in the CUDA flag.
 ```
-cmake .. -DCUDA=ON
+cmake .. -DCUDA=OFF
 make
 ```
 

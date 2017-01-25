@@ -6,7 +6,7 @@ endif()
 
 project(peticodiac)
 
-option(CUDA "Enable CUDA Support" OFF)
+option(CUDA "Enable CUDA Support" ON)
 
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
