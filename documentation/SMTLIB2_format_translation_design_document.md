@@ -81,6 +81,7 @@ real number.
 
 
 ## Design Proposal
+### Input Format
 - Create our own file-based input format similar to the DIMACS format for SAT solver
 ```
 Example of a possible input format
@@ -99,6 +100,14 @@ b 2 2 NO_BOUND
 - Develop a preprocessor that converts SMT-LIB scripts into an intermediate file using our input format
 - Execute the solver against our input file
 
+### From SMTLIB2 to Peticodiac input format
+- The jSMTLIB is an open source java-based parser for the SMTLIB2 Language
+- It can act as the frontend for a non-SMTLIB2-native SMT solver by converting the SMTLIB2 script to the solver's native input using an adapter
+- We can create a Java-based peticodiac adapter that conforms to the jSMTLIB Solver_test and ISolver interfaces
+- Key functions to implement
+  - declare_fun(): declares variables
+  - assertExpr(): creates constraints and bounds
+  - output(): outputs a file containing our SMT solver input format
 
 ## Pseudo Code
 
