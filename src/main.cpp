@@ -60,6 +60,23 @@ void execute(Solver* const solver) {
   }
 }
 
+void start_solver_test(const SolverType type, const int num_var, const int num_constr) {
+  printf("In start_solver");
+  Solver* solver = nullptr;
+  int num_vars = 1;
+  int num_constrs = 1;
+  solver = Solver::create(type, num_vars, num_constrs);
+
+  std::vector<float> constr = {1.0};
+  solver->add_constraint(constr);
+  const float low = 1.0E-7;
+  const float upp = 111.0;
+  printf("The lower bound = %f and upper bound = %f\n", low, upp);
+  solver->set_bounds(num_vars, low, upp);
+  execute(solver);
+  delete solver;
+}
+
 void start_solver(const SolverType type, const int num_vars, const int num_constrs) {
   Solver* solver = nullptr;
   solver = Solver::create(type, num_vars, num_constrs);
@@ -94,11 +111,11 @@ void start_solver(const SolverType type, char const *input_file) {
 
         if (expression_line[0].compare("p") == 0) {
           // This is the header, create the solver
-          printf("Create solver with %s vars and %s bounds\n", expression_line[2].c_str(), expression_line[3].c_str());
+          printf("#### Create solver with %s vars and %s bounds\n", expression_line[2].c_str(), expression_line[3].c_str());
           solver = Solver::create(type, std::stoi(expression_line[2]), std::stoi(expression_line[3]));
         } else if (expression_line[0].compare("c") == 0) {
           // This is the constraint, add constraint as a vector<float>
-          printf("Add constraint %s\n", line.c_str());
+          printf("#### Add constraint %s\n", line.c_str());
           std::vector<float> coefficient;
           for (int i = 1; i < expression_line.size(); ++i) {
             coefficient.push_back(std::stof(expression_line[i]));
@@ -106,12 +123,13 @@ void start_solver(const SolverType type, char const *input_file) {
           solver->add_constraint(coefficient);
         } else if (expression_line[0].compare("b") == 0) {
           // This is the bound, set_bounds with index, lower bound, and upper bound
-          printf("Set bound %s\n", line.c_str());
+          printf("#### Set bound %s\n", line.c_str());
           int index = std::stoi(expression_line[1]);
           std::vector<std::string> lower = split(expression_line[2], ':');
           float lower_bound = lower.size() == 1 ? NO_BOUND : std::stof(lower[1]);
           std::vector<std::string> upper = split(expression_line[3], ':');
           float upper_bound = upper.size() == 1 ? NO_BOUND : std::stof(upper[1]);
+          printf("The lower bound = %f and upper bound = %f\n", lower_bound, upper_bound);
           solver->set_bounds(index, lower_bound, upper_bound);
         }
       }
@@ -165,7 +183,8 @@ int main(const int argc, const char** argv) {
   if (input_file) {
     start_solver(type, input_file);
   } else {
-    start_solver(type, num_vars, num_constrs);
+    //start_solver(type, num_vars, num_constrs);
+    start_solver_test(type, num_vars, num_constrs);
   }
 
   exit(EXIT_SUCCESS);

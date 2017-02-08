@@ -54,9 +54,7 @@ CpuSolver::~CpuSolver() {
 
 bool CpuSolver::add_constraint(const std::vector<float> constr) {
 #ifdef DEBUG
-  printf("======== add constraint ========\n");
-  printf("constr size = %u and ncols = %u\n", constr.size(), ncols_);
-  printf("constr value = %f\n", constr[0]);
+  printf("add_constraint() constr size = %u and ncols = %u\n", constr.size(), ncols_);
 #endif
   if (constr.size() != ncols_)
     return false;
