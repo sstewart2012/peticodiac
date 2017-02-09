@@ -106,16 +106,20 @@ void start_solver(const SolverType type, char const *input_file) {
   peticodiac_file.open(input_file);
   if (peticodiac_file.is_open()) {
     while (getline(peticodiac_file, line)) {
-      if (strcmp(line.substr(0, 1).c_str(), "#") != 0 ) {
+      if (line != "" && strcmp(line.substr(0, 1).c_str(), "#") != 0 ) {
         std::vector<std::string> expression_line = split(line);
 
         if (expression_line[0].compare("p") == 0) {
           // This is the header, create the solver
+#ifdef DEBUG
           printf("#### Create solver with %s vars and %s bounds\n", expression_line[2].c_str(), expression_line[3].c_str());
+#endif
           solver = Solver::create(type, std::stoi(expression_line[2]), std::stoi(expression_line[3]));
         } else if (expression_line[0].compare("c") == 0) {
           // This is the constraint, add constraint as a vector<float>
+#ifdef DEBUG
           printf("#### Add constraint %s\n", line.c_str());
+#endif
           std::vector<float> coefficient;
           for (int i = 1; i < expression_line.size(); ++i) {
             coefficient.push_back(std::stof(expression_line[i]));
@@ -123,17 +127,21 @@ void start_solver(const SolverType type, char const *input_file) {
           solver->add_constraint(coefficient);
         } else if (expression_line[0].compare("b") == 0) {
           // This is the bound, set_bounds with index, lower bound, and upper bound
-          printf("#### Set bound %s\n", line.c_str());
           int index = std::stoi(expression_line[1]);
           std::vector<std::string> lower = split(expression_line[2], ':');
           float lower_bound = lower.size() == 1 ? NO_BOUND : std::stof(lower[1]);
           std::vector<std::string> upper = split(expression_line[3], ':');
           float upper_bound = upper.size() == 1 ? NO_BOUND : std::stof(upper[1]);
+#ifdef DEBUG
+          printf("#### Set bound %s\n", line.c_str());
           printf("The lower bound = %f and upper bound = %f\n", lower_bound, upper_bound);
+#endif
           solver->set_bounds(index, lower_bound, upper_bound);
         } else if (line.compare("eoa") == 0) {
           // Start the solver
+#ifdef DEBUG
           printf("#### End of assertion: start solver\n");
+#endif
           execute(solver);
           delete solver;
           solver = nullptr;
@@ -143,7 +151,6 @@ void start_solver(const SolverType type, char const *input_file) {
   }
 
   if (solver != nullptr) {
-
     delete solver;
   }
 }
