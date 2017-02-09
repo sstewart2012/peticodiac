@@ -131,12 +131,21 @@ void start_solver(const SolverType type, char const *input_file) {
           float upper_bound = upper.size() == 1 ? NO_BOUND : std::stof(upper[1]);
           printf("The lower bound = %f and upper bound = %f\n", lower_bound, upper_bound);
           solver->set_bounds(index, lower_bound, upper_bound);
+        } else if (line.compare("eoa") == 0) {
+          // Start the solver
+          printf("#### End of assertion: start solver\n");
+          execute(solver);
+          delete solver;
+          solver = nullptr;
         }
       }
     }
   }
-  execute(solver);
-  delete solver;
+
+  if (solver != nullptr) {
+
+    delete solver;
+  }
 }
 
 int main(const int argc, const char** argv) {
