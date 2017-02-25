@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-if (${APPLE})
-  set(CMAKE_CXX_COMPILER "g++-6")
-endif()
+set(CMAKE_CXX_COMPILER "g++-6")
 
 project(peticodiac)
 
