@@ -93,7 +93,7 @@ c 2 3
 b 2 2 NO_BOUND
 ```
   - The file can start with comments with lines beginning with `#`
-  - The line `p cnf NUM_VARS NUM_CONSTRS` indicating that the instance is in conjugated form, with the given number of constraints and bounds
+  - The line `p cnf NUM_VARS NUM_CONSTRS` indicating that the instance is in conjunction form, with the given number of constraints and bounds
   - A line starts with `c` indicates a constraint coefficient input. The number of lines that contain the letter `c` should be equal to NUM_CONSTRS and the number of subsequent value count should equal to NUM_VARS
   - A line starts with `b` indicates a bound input. The number of lines that contain the letter `b` should be equal to NUM_CONSTRS
 
