@@ -53,6 +53,9 @@ CpuSolver::~CpuSolver() {
 }
 
 bool CpuSolver::add_constraint(const std::vector<float> constr) {
+#ifdef DEBUG
+  printf("add_constraint() constr size = %u and ncols = %u\n", constr.size(), ncols_);
+#endif
   if (constr.size() != ncols_)
     return false;
   std::memcpy(&tableau_[next_constr_idx_ * ncols_], &constr[0],
