@@ -6,7 +6,7 @@
 
 namespace {
 
-float* random_float(const unsigned int count, const int low, const int high) {
+float* random_float(const int count, const int low, const int high) {
   float *v = new float[count];
   std::random_device rd;
   std::mt19937 eng(rd());
@@ -18,7 +18,7 @@ float* random_float(const unsigned int count, const int low, const int high) {
   return v;
 }
 
-std::vector<float> random_instance(const unsigned int count, const int low, const int high) {
+std::vector<float> random_instance(const int count, const int low, const int high) {
   std::vector<float> v;
   std::random_device rd;
   std::mt19937 eng(rd());

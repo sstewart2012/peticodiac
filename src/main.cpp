@@ -17,16 +17,16 @@ using solver::SolverProfiler;
 
 void print_solution(const Solver &s) {
   const std::vector<float> solution = s.solution();
-  for (int i = 0; i < solution.size(); ++i) {
-    printf("x%d=%.3f%s", i, solution[i], i + 1 < solution.size() ? " " : "\n");
+  for (int i = 0; i < int(solution.size()); ++i) {
+    printf("x%d=%.3f%s", i, solution[i], i + 1 < int(solution.size()) ? " " : "\n");
   }
 }
 
 std::vector<std::string> split(const std::string &s, char delim = ' ') {
   std::vector<std::string> tokens;
-  for (int i = 0; i < s.length(); ++i) {
+  for (int i = 0; i < int(s.length()); ++i) {
     std::string current_string;
-    while (s[i] != delim && s[i] != '\n' && i < s.length()) {
+    while (s[i] != delim && s[i] != '\n' && i < int(s.length())) {
       current_string += s[i];
       i++;
     }
@@ -121,7 +121,7 @@ void start_solver(const SolverType type, char const *input_file) {
           printf("#### Add constraint %s\n", line.c_str());
 #endif
           std::vector<float> coefficient;
-          for (int i = 1; i < expression_line.size(); ++i) {
+          for (int i = 1; i < int(expression_line.size()); ++i) {
             coefficient.push_back(std::stof(expression_line[i]));
           }
           solver->add_constraint(coefficient);
