@@ -1,6 +1,6 @@
 #include <cassert>
 #include <cuda_runtime.h>
-#include "AbstractSolver.h"
+#include "CudaSolver.h"
 #include "cudaHelper.h"
 #include "generalSimplex.h"
 

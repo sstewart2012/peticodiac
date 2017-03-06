@@ -5,7 +5,13 @@
 #include <omp.h>
 #include <string.h>
 
-#include "AbstractSolver.h"
+#include "CpuSolver.h"
+#include "CpuEagerSolver.h"
+
+#ifdef CUDA_ENABLED
+#include "CudaSolver.h"
+#endif
+
 #include "random.h"
 #include "timing.h"
 
