@@ -67,14 +67,26 @@ std::vector<T> CpuSolver<T>::solution() const {
 template <typename T>
 void CpuSolver<T>::print_tableau() const {
   for (auto& i: basic_) {
-    printf("b%d %d:[%s] %.3f <= %.3f <= %.3f%s\n", var_to_tableau_[i], i,
-           this->var2str(i).c_str(), lower_[i], assigns_[i], upper_[i],
-           is_broken(i) ? " broken" : "");
+    std::cout << "b" << var_to_tableau_[i] << " " << i << ":[" << this->var2str(i).c_str() << "] ";
+    std::cout << lower_[i] << " <= " << assigns_[i] << " <= " << upper_[i];
+    if (is_broken(i)) {
+      std::cout << " broken";
+    }
+    std::cout << std::endl;
+    // printf("b%d %d:[%s] %.3f <= %.3f <= %.3f%s\n", var_to_tableau_[i], i,
+    //        this->var2str(i).c_str(), lower_[i], assigns_[i], upper_[i],
+    //        is_broken(i) ? " broken" : "");
   }
   for (auto& i: nonbasic_) {
-    printf("n%d %d:[%s] %.3f <= %.3f <= %.3f%s\n", var_to_tableau_[i], i,
-           this->var2str(i).c_str(), lower_[i], assigns_[i], upper_[i],
-           is_broken(i) ? " broken" : "");
+    std::cout << "n" << var_to_tableau_[i] << " " << i << ":[" << this->var2str(i).c_str() << "] ";
+    std::cout << lower_[i] << " <= " << assigns_[i] << " <= " << upper_[i];
+    if (is_broken(i)) {
+      std::cout << " broken";
+    }
+    std::cout << std::endl;
+    // printf("n%d %d:[%s] %.3f <= %.3f <= %.3f%s\n", var_to_tableau_[i], i,
+    //        this->var2str(i).c_str(), lower_[i], assigns_[i], upper_[i],
+    //        is_broken(i) ? " broken" : "");
   }
 }
 
@@ -82,9 +94,14 @@ template <typename T>
 void CpuSolver<T>::print_variables() const {
   for (int i = 0; i < nrows_; ++i) {
     for (int j = 0; j < ncols_; ++j) {
-      printf("%.3f%s", tableau_[i * ncols_ + j], j < ncols_ ? " " : "");
+      std::cout << tableau_[i * ncols_ + j];
+      if (j < ncols_) {
+        std::cout << " ";
+      }
+      //printf("%.3f%s", tableau_[i * ncols_ + j], j < ncols_ ? " " : "");
     }
-    printf("\n");
+    std::cout << endl;
+    //printf("\n");
   }
 }
 
@@ -93,9 +110,9 @@ bool CpuSolver<T>::is_broken(const int idx) const {
   const T ass = get_assignment(idx);
   const T low = get_lower(idx);
   const T upp = get_upper(idx);
-  if (fabs(ass - low) < EPSILON) { // "close enough" to lower bound
+  if ((ass - low) < EPSILON && (ass - low) > -EPSILON) { // "close enough" to lower bound
     return false;
-  } else if (fabs(ass - upp) < EPSILON) { // "close enough" to upper bound
+  } else if ((ass - upp) < EPSILON and (ass - upp) > -EPSILON) { // "close enough" to upper bound
     return false;
   } else if (low != NO_BOUND && ass < low) {
     return true;
@@ -112,7 +129,7 @@ T CpuSolver<T>::get_assignment(const int idx) const {
   if (basic_.find(idx) == basic_.end())
     return assigns_[idx];
   int tmp = (*map_assigns_.find(idx)).second;
-  if (tmp == get_step_count())
+  if (tmp == this->get_step_count())
     return assigns_[idx];
   else if (basic_.find(idx) == basic_.end())
     return assigns_[idx];
@@ -127,14 +144,16 @@ T CpuSolver<T>::compute_assignment(const int idx) const {
   T val = 0.0f;
   int i;
 
-  #pragma omp parallel for reduction(+:val)
+  // TODO: Need to reimplement this to replace reduction() as OpenMP reduction is not overloaded in the Fraction class
+  //#pragma omp parallel for reduction(+:val)
+  #pragma omp parallel for
   for (i = 0; i < ncols_; ++i) {
     val += row[i] * assigns_[col_to_var_[i]];
   }
 
   // Update the assignment
   const_cast<CpuSolver*>(this)->assigns_[idx] = val;
-  const_cast<CpuSolver*>(this)->map_assigns_[idx] = get_step_count();
+  const_cast<CpuSolver*>(this)->map_assigns_[idx] = this->get_step_count();
 
   return val;
 }
@@ -217,7 +236,7 @@ void CpuSolver<T>::pivot(const int broken_idx, const int suitable_idx) {
   pivot_update_inner(alpha, pivot_row, pivot_col);
   pivot_update_row(alpha, pivot_row);
   pivot_update_column(alpha, pivot_col);
-  tableau_[alpha_idx] = 1.0f / alpha;
+  tableau_[alpha_idx] = 1 / alpha;
 
   // Swap the basic and nonbasic variables
   swap(pivot_row, pivot_col, broken_idx, suitable_idx);
@@ -276,6 +295,7 @@ void CpuSolver<T>::pivot_update_column(const T alpha, const int col) {
   }
 }
 
-}  // namespace solver
+template class CpuSolver<float>;
+template class CpuSolver<Fraction>;
 
-template class solver::CpuSolver<float>;
+}  // namespace solver

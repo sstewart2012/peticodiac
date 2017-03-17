@@ -36,5 +36,5 @@ else()
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_EXE_LINKER_FLAGS}")
-  add_executable(peticodiac src/main.cpp src/CpuSolver.cpp src/CpuEagerSolver.cpp src/Solver.cpp src/AbstractSolver.cpp src/SolverProfiler.cpp)
+  add_executable(peticodiac src/main.cpp src/CpuSolver.cpp src/CpuEagerSolver.cpp src/Solver.cpp src/AbstractSolver.cpp src/SolverProfiler.cpp src/fraction.cpp)
 endif()

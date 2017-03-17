@@ -1,8 +1,10 @@
 #include "AbstractSolver.h"
 
-solver::AbstractSolver::~AbstractSolver() {}
+template <typename T>
+solver::AbstractSolver<T>::~AbstractSolver() {}
 
-bool solver::AbstractSolver::solve() {
+template <typename T>
+bool solver::AbstractSolver<T>::solve() {
   double time = -cpu_second();
   int broken_idx = -1;
   int suitable_idx = -1;
@@ -28,3 +30,6 @@ bool solver::AbstractSolver::solve() {
   }
   return true;
 }
+
+template class solver::AbstractSolver<float>;
+template class solver::AbstractSolver<solver::Fraction>;

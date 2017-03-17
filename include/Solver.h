@@ -4,7 +4,8 @@
 #include "AbstractSolver.h"
 
 namespace solver {
-  class Solver : public AbstractSolver {
+  template <typename T>
+  class Solver : public AbstractSolver<T> {
     friend class SolverProfiler;
    public:
     // Factory method
@@ -21,7 +22,7 @@ namespace solver {
     }
     // Converts a variable index into a string representation.
     inline std::string var2str(const int idx) const {
-      const int ncols = num_problem_vars();
+      const int ncols = this->num_problem_vars();
       if (idx < ncols) {
         return "x" + std::to_string(idx);
       } else {

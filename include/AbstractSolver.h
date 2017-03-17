@@ -7,6 +7,7 @@
 #include <vector>
 #include <cassert>
 #include "timing.h"
+#include "fraction.h"
 
 #ifdef CUDA_ENABLED
 #include <cuda_runtime.h>
@@ -29,12 +30,13 @@ namespace solver {
     CUDA
   };
 
+  template <typename T>
   class AbstractSolver {
    public:
     virtual ~AbstractSolver();
-    virtual bool add_constraint(const std::vector<float> constr) = 0;
-    virtual void set_bounds(const int idx, const float lower, const float upper) = 0;
-    virtual std::vector<float> solution() const = 0;
+    virtual bool add_constraint(const std::vector<T> constr) = 0;
+    virtual void set_bounds(const int idx, const T lower, const T upper) = 0;
+    virtual std::vector<T> solution() const = 0;
     virtual bool solve();
     virtual int num_problem_vars() const = 0;
     virtual int num_additional_vars() const = 0;
