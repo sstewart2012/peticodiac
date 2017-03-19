@@ -1,4 +1,5 @@
 #include "CpuSolver.h"
+#include <typeinfo>
 
 namespace solver {
 template <typename T>
@@ -40,7 +41,8 @@ CpuSolver<T>::~CpuSolver() {
 template <typename T>
 bool CpuSolver<T>::add_constraint(const std::vector<T> constr) {
 #ifdef DEBUG
-  printf("add_constraint() constr size = %u and ncols = %u\n", constr.size(), ncols_);
+  std::cout << "add_constraint() constr size = " << constr.size() << " and ncols = " << ncols_ << std::endl;
+  //printf("add_constraint() constr size = %u and ncols = %u\n", constr.size(), ncols_);
 #endif
   if (int(constr.size()) != ncols_) {
     return false;
@@ -110,16 +112,30 @@ bool CpuSolver<T>::is_broken(const int idx) const {
   const T ass = get_assignment(idx);
   const T low = get_lower(idx);
   const T upp = get_upper(idx);
-  if ((ass - low) < EPSILON && (ass - low) > -EPSILON) { // "close enough" to lower bound
-    return false;
-  } else if ((ass - upp) < EPSILON and (ass - upp) > -EPSILON) { // "close enough" to upper bound
-    return false;
-  } else if (low != NO_BOUND && ass < low) {
-    return true;
-  } else if (upp != NO_BOUND && ass > upp) {
-    return true;
+  if (typeid(ass).name() == typeid(float).name()) {
+    if (fabs(ass - low) < EPSILON) { // "close enough" to lower bound
+      return false;
+    } else if (fabs(ass - upp) < EPSILON) { // "close enough" to upper bound
+      return false;
+    } else if (low != NO_BOUND && ass < low) {
+      return true;
+    } else if (upp != NO_BOUND && ass > upp) {
+      return true;
+    } else {
+      return false;
+    }
   } else {
-    return false;
+    if (ass == low) {
+      return false;
+    } else if (ass == upp) {
+      return false;
+    } else if (low != NO_BOUND && ass < low) {
+      return true;
+    } else if (upp != NO_BOUND && ass > upp) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 
@@ -225,7 +241,8 @@ void CpuSolver<T>::pivot(const int broken_idx, const int suitable_idx) {
   const int pivot_row = var_to_tableau_[broken_idx];
   const int pivot_col = var_to_tableau_[suitable_idx];
 #ifdef DEBUG
-  printf("Pivot(%d,%d)\n", pivot_row, pivot_col);
+  std::cout << "Pivot(" << pivot_row << "," << pivot_col << ")" << std::endl;
+  //printf("Pivot(%d,%d)\n", pivot_row, pivot_col);
 #endif
 
   // Save the current pivot element (alpha)

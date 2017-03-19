@@ -14,7 +14,7 @@ void solver::CpuEagerSolver<T>::update_assignment() {
   int i, j;
   #pragma omp parallel for private(i, j)
   for (i = 0; i < this->nrows_; ++i) {
-    T accum{};
+    T accum = 0;
     for (j = 0; j < this->ncols_; ++j) {
       accum += this->tableau_[i * this->ncols_ + j] * this->assigns_[this->col_to_var_[j]];
     }

@@ -15,7 +15,7 @@ bool solver::AbstractSolver<T>::solve() {
     pivot(broken_idx, suitable_idx);
     update_assignment();
     if (get_step_count() % 1000 == 0) {
-      printf("%d steps\n", get_step_count());
+      std::cout << get_step_count() << " steps" << std::endl;
     }
     double check_time = time + cpu_second();
     if (check_time >= 10.0) {
