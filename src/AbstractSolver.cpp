@@ -24,8 +24,11 @@ bool solver::AbstractSolver<T>::solve() {
     }
 #ifdef DEBUG
     printf("<Step %d>\n", get_step_count());
+    printf("#### Variables ####\n");
     print_variables();
+    printf("#### Tableau ####\n");
     print_tableau();
+    printf("\n");
 #endif
   }
   return true;

@@ -26,9 +26,9 @@ void print_solution(Solver<T> &s) {
   const std::vector<T> solution = s.solution();
   for (int i = 0; i < int(solution.size()); ++i) {
     // printf("x%d=%.3f%s", i, solution[i], i + 1 < int(solution.size()) ? " " : "\n");
-    std::cout << i << "=" << solution[i];
+    std::cout << "x" << i << "=" << solution[i];
     if ((i + 1) < int(solution.size())) {
-      std::cout << " ";
+      std::cout << "  ";
     } else {
       std::cout << endl;
     }
@@ -50,9 +50,11 @@ std::vector<std::string> split(const std::string &s, char delim = ' ') {
 
 template <typename T>
 void execute(Solver<T>* const solver) {
+printf("\n\n## Start Execute ##\n\n");
 #ifdef DEBUG
+  printf("#### Variables ####\n");
   solver->print_variables();
-  printf("\n");
+  printf("#### Tableau ####\n");
   solver->print_tableau();
   printf("\n");
 #endif
@@ -60,15 +62,21 @@ void execute(Solver<T>* const solver) {
   double solver_time = -cpu_second();
   bool solver_val = solver->solve();
   solver_time += cpu_second();
+  bool solution_verified = solver->verify_solution();
   int solver_steps = solver->get_step_count();
 
+  printf("\n################ Summary ################\n");
   printf("CPU time              : %.3f seconds\n", solver_time);
   printf("CPU result            : %s\n", solver_val ? "SAT" : "UNSAT");
   printf("CPU steps             : %d\n", solver_steps);
   printf("CPU steps per second  : %.1f\n", solver_steps / solver_time);
   printf("\n");
   if (solver_val) {
-    printf("SAT Solution:\n");
+    if (solution_verified) {
+      printf("SAT Solution:\n");
+    } else {
+      printf("Erroneous SAT Solution:\n");
+    }
     print_solution<T>(*solver);
     printf("\n");
   }
@@ -76,7 +84,7 @@ void execute(Solver<T>* const solver) {
 
 template <typename T>
 void start_solver_test(const SolverType type, const int num_var, const int num_constr) {
-  printf("In start_solver");
+  printf("## Start Solver ##\n");
   Solver<T>* solver = nullptr;
   int num_vars = 2;
   int num_constrs = 2;
@@ -90,7 +98,7 @@ void start_solver_test(const SolverType type, const int num_var, const int num_c
   solver::Fraction upper(40);
   const T low = lower;
   const T upp = upper;
-  std::cout << "The lower bound = " << low << " and upper bound = " << upp << endl;
+  std::cout << "    The lower bound = " << low << " and upper bound = " << upp << endl;
   //printf("The lower bound = %f and upper bound = %f\n", low, upp);
   solver->set_bounds(2, low, upp);
 
@@ -102,7 +110,7 @@ void start_solver_test(const SolverType type, const int num_var, const int num_c
   solver::Fraction upper2(60);
   const T low2 = lower2;
   const T upp2 = upper2;
-  std::cout << "The lower bound = " << low2 << " and upper bound = " << upp2 << endl;
+  std::cout << "    The lower bound = " << low2 << " and upper bound = " << upp2 << endl;
   //printf("The lower bound = %f and upper bound = %f\n", low, upp);
   solver->set_bounds(3, low2, upp2);
 

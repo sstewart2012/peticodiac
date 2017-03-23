@@ -6,6 +6,7 @@ template <typename T>
 CpuSolver<T>::CpuSolver(const int num_vars, const int max_num_constrs)
     : ncols_(num_vars), nrows_(max_num_constrs) {
   memset(tableau_, 0, nrows_ * ncols_ * sizeof(T));
+  memset(verify_tableau_, 0, nrows_ * ncols_ * sizeof(T));
   int i, j;
   for (i = 0; i < ncols_; ++i) {
     col_to_var_[i] = i;
@@ -15,6 +16,8 @@ CpuSolver<T>::CpuSolver(const int num_vars, const int max_num_constrs)
     assigns_[i] = 0.0f;
     nonbasic_.insert(i);
     map_assigns_[i] = 0;
+    verify_lower_[i] = 0.0f;
+    verify_upper_[i] = NO_BOUND;
   }
   for (j = 0; j < nrows_; ++j, ++i) {
     row_to_var_[j] = i;
@@ -24,6 +27,9 @@ CpuSolver<T>::CpuSolver(const int num_vars, const int max_num_constrs)
     assigns_[i] = 0.0f;
     basic_.insert(i);
     map_assigns_[i] = 0;
+    verify_lower_[i] = 0.0f;
+    verify_upper_[i] = 0.0f;
+    verify_basic_.insert(i);
   }
 }
 
@@ -36,6 +42,9 @@ CpuSolver<T>::~CpuSolver() {
   delete[] row_to_var_;
   delete[] col_to_var_;
   delete[] var_to_tableau_;
+  delete[] verify_tableau_;
+  delete[] verify_lower_;
+  delete[] verify_upper_;
 }
 
 template <typename T>
@@ -48,6 +57,7 @@ bool CpuSolver<T>::add_constraint(const std::vector<T> constr) {
     return false;
   }
   std::memcpy(&tableau_[next_constr_idx_ * ncols_], &constr[0], constr.size() * sizeof(T));
+  std::memcpy(&verify_tableau_[next_constr_idx_ * ncols_], &constr[0], constr.size() * sizeof(T));
   next_constr_idx_++;
   return true;
 }
@@ -56,6 +66,8 @@ template <typename T>
 void CpuSolver<T>::set_bounds(const int idx, const T lower, const T upper) {
   lower_[idx] = lower;
   upper_[idx] = upper;
+  verify_lower_[idx] = lower;
+  verify_upper_[idx] = upper;
 }
 
 template <typename T>
@@ -108,14 +120,55 @@ void CpuSolver<T>::print_variables() const {
 }
 
 template <typename T>
+bool CpuSolver<T>::verify_solution() const {
+  std::cout << "#### Verify Solution ####" << std::endl;
+  int row_index = 0;
+  for (auto& i: verify_basic_) {
+#ifdef DEBUG
+    std::cout << "Expression " << row_index << ":";
+    std::cout << "Lower bound = " << verify_lower_[i] << " | Upper bound = " << verify_upper_[i] << std::endl;
+    std::cout << "    ";
+    for (int j = 0; j < ncols_; ++j) {
+      std::cout << verify_tableau_[row_index * ncols_ + j] << " * ";
+      std::cout << "(" << assigns_[j] << ")";
+      if (j < ncols_ - 1) {
+        std::cout << " + ";
+      }
+    }
+    std::cout << std::endl;
+#endif
+
+    T verify_result{};
+    for (int j = 0; j < ncols_; ++j) {
+      verify_result += verify_tableau_[row_index * ncols_ + j] * assigns_[j];
+    }
+
+#ifdef DEBUG
+      std::cout << "    Verify result = " << verify_result << std::endl;
+#endif
+
+    if (verify_result < verify_lower_[i] || verify_result > verify_upper_[i]) {
+#ifdef DEBUG
+      std::cout << "    ERROR: outside the bound!" << std::endl;
+#endif
+      return false;
+    }
+
+    row_index++;
+  }
+
+  return true;
+}
+
+template <typename T>
 bool CpuSolver<T>::is_broken(const int idx) const {
   const T ass = get_assignment(idx);
   const T low = get_lower(idx);
   const T upp = get_upper(idx);
   if (typeid(ass).name() == typeid(float).name()) {
-    if (fabs(ass - low) < EPSILON) { // "close enough" to lower bound
+    if ((ass - low) < EPSILON && (ass - low) > -EPSILON) { // "close enough" to lower bound
       return false;
-    } else if (fabs(ass - upp) < EPSILON) { // "close enough" to upper bound
+    } else if ((ass - upp) < EPSILON && (ass - upp) > -EPSILON) { // "close enough" to upper bound
       return false;
     } else if (low != NO_BOUND && ass < low) {
       return true;
