@@ -67,7 +67,15 @@ printf("\n\n## Start Execute ##\n\n");
 
   printf("\n################ Summary ################\n");
   printf("CPU time              : %.3f seconds\n", solver_time);
-  printf("CPU result            : %s\n", solver_val ? "SAT" : "UNSAT");
+  if (solver_val) {
+    if (solution_verified) {
+      printf("CPU result            : %s\n", "SAT");
+    } else {
+      printf("CPU result            : %s\n", "ERRORSAT");
+    }
+  } else {
+    printf("CPU result            : %s\n", "UNSAT");
+  }
   printf("CPU steps             : %d\n", solver_steps);
   printf("CPU steps per second  : %.1f\n", solver_steps / solver_time);
   printf("\n");
@@ -83,8 +91,10 @@ printf("\n\n## Start Execute ##\n\n");
 }
 
 template <typename T>
-void start_solver_test(const SolverType type, const int num_var, const int num_constr) {
-  printf("## Start Solver ##\n");
+void start_solver_test_fraction(const SolverType type, const int num_var, const int num_constr) {
+  printf("#######################################\n");
+  printf("######## Start Fraction Solver ########\n");
+  printf("#######################################\n");
   Solver<T>* solver = nullptr;
   int num_vars = 2;
   int num_constrs = 2;
@@ -99,43 +109,50 @@ void start_solver_test(const SolverType type, const int num_var, const int num_c
   const T low = lower;
   const T upp = upper;
   std::cout << "    The lower bound = " << low << " and upper bound = " << upp << endl;
-  //printf("The lower bound = %f and upper bound = %f\n", low, upp);
   solver->set_bounds(2, low, upp);
 
   solver::Fraction constraint3(6);
   solver::Fraction constraint4(8);
   std::vector<T> constr2 = {constraint3, constraint4};
   solver->add_constraint(constr2);
-  solver::Fraction lower2(NO_BOUND);
+  solver::Fraction lower2(30);
   solver::Fraction upper2(60);
   const T low2 = lower2;
   const T upp2 = upper2;
   std::cout << "    The lower bound = " << low2 << " and upper bound = " << upp2 << endl;
-  //printf("The lower bound = %f and upper bound = %f\n", low, upp);
   solver->set_bounds(3, low2, upp2);
 
   execute<T>(solver);
   delete solver;
 }
 
-// template <typename T>
-// void start_solver_test(const SolverType type, const int num_var, const int num_constr) {
-//   printf("In start_solver");
-//   Solver<T>* solver = nullptr;
-//   int num_vars = 1;
-//   int num_constrs = 1;
-//   solver = Solver<T>::create(type, num_vars, num_constrs);
-//
-//   std::vector<T> constr = {5.0};
-//   solver->add_constraint(constr);
-//   const T low = 5.0f;
-//   const T upp = 5.0f;
-//   std::cout << "The lower bound = " << low << " and upper bound = " << upp << endl;
-//   //printf("The lower bound = %f and upper bound = %f\n", low, upp);
-//   solver->set_bounds(num_vars, low, upp);
-//   execute<T>(solver);
-//   delete solver;
-// }
+template <typename T>
+void start_solver_test_float(const SolverType type, const int num_var, const int num_constr) {
+  printf("####################################\n");
+  printf("######## Start Float Solver ########\n");
+  printf("####################################\n");
+  Solver<T>* solver = nullptr;
+  int num_vars = 2;
+  int num_constrs = 2;
+  solver = Solver<T>::create(type, num_vars, num_constrs);
+
+  std::vector<T> constr = {3.0, 2.0};
+  solver->add_constraint(constr);
+  const T low = 10.0f;
+  const T upp = 40.0f;
+  std::cout << "The lower bound = " << low << " and upper bound = " << upp << endl;
+  solver->set_bounds(2, low, upp);
+
+  std::vector<T> constr2 = {6.0, 8.0};
+  solver->add_constraint(constr2);
+  const T low2 = 30.0f;
+  const T upp2 = 60.0f;
+  std::cout << "The lower bound = " << low2 << " and upper bound = " << upp2 << endl;
+  solver->set_bounds(3, low2, upp2);
+
+  execute<T>(solver);
+  delete solver;
+}
 
 template <typename T>
 void start_solver(const SolverType type, const int num_vars, const int num_constrs) {
@@ -262,8 +279,8 @@ int main(const int argc, const char** argv) {
     start_solver<float>(type, input_file);
   } else {
     //start_solver(type, num_vars, num_constrs);
-    //start_solver_test<float>(type, num_vars, num_constrs);
-    start_solver_test<solver::Fraction>(type, num_vars, num_constrs);
+    start_solver_test_float<float>(type, num_vars, num_constrs);
+    start_solver_test_fraction<solver::Fraction>(type, num_vars, num_constrs);
   }
 
   exit(EXIT_SUCCESS);
