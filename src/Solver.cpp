@@ -1,4 +1,10 @@
-#include "AbstractSolver.h"
+#include "Solver.h"
+#include "CpuSolver.h"
+#include "CpuEagerSolver.h"
+
+#ifdef CUDA_ENABLED
+#include "CudaSolver.h"
+#endif
 
 namespace solver {
 
@@ -17,9 +23,9 @@ Solver* Solver::create(SolverType type, const int num_vars, const int max_num_co
 #else
     printf("CUDA not supported\n");
 #endif
-  } else {
-    return nullptr;
   }
+  
+  return nullptr;
 }
 
 } // namespace solver

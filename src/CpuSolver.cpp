@@ -1,25 +1,8 @@
-#include <cmath>
-#include <cstring>
-#include "AbstractSolver.h"
-#include <omp.h>
+#include "CpuSolver.h"
 
 namespace solver {
-
-void CpuEagerSolver::update_assignment() {
-    incr_step_count();
-#pragma omp parallel for
-    for (int i = 0; i < nrows_; ++i) {
-      float accum = 0.0f;
-      for (int j = 0; j < ncols_; ++j) {
-        accum += tableau_[i * ncols_ + j] * assigns_[col_to_var_[j]];
-      }
-      assigns_[row_to_var_[i]] = accum;
-    }
-  }
-
 CpuSolver::CpuSolver(const int num_vars, const int max_num_constrs)
-    : ncols_(num_vars),
-      nrows_(max_num_constrs) {
+    : ncols_(num_vars), nrows_(max_num_constrs) {
   memset(tableau_, 0, nrows_ * ncols_ * sizeof(float));
   int i, j;
   for (i = 0; i < ncols_; ++i) {
@@ -53,16 +36,18 @@ CpuSolver::~CpuSolver() {
 }
 
 bool CpuSolver::add_constraint(const std::vector<float> constr) {
-  if (constr.size() != ncols_)
+#ifdef DEBUG
+  printf("add_constraint() constr size = %u and ncols = %u\n", constr.size(), ncols_);
+#endif
+  if (int(constr.size()) != ncols_) {
     return false;
-  std::memcpy(&tableau_[next_constr_idx_ * ncols_], &constr[0],
-              constr.size() * sizeof(float));
+  }
+  std::memcpy(&tableau_[next_constr_idx_ * ncols_], &constr[0], constr.size() * sizeof(float));
   next_constr_idx_++;
   return true;
 }
 
-void CpuSolver::set_bounds(const int idx, const float lower,
-                           const float upper) {
+void CpuSolver::set_bounds(const int idx, const float lower, const float upper) {
   lower_[idx] = lower;
   upper_[idx] = upper;
 }
@@ -75,14 +60,12 @@ std::vector<float> CpuSolver::solution() const {
 }
 
 void CpuSolver::print_tableau() const {
-  for (auto it = basic_.begin(); it != basic_.end(); ++it) {
-    int i = *it;
+  for (auto& i: basic_) {
     printf("b%d %d:[%s] %.3f <= %.3f <= %.3f%s\n", var_to_tableau_[i], i,
            this->var2str(i).c_str(), lower_[i], assigns_[i], upper_[i],
            is_broken(i) ? " broken" : "");
   }
-  for (auto it = nonbasic_.begin(); it != nonbasic_.end(); ++it) {
-    int i = *it;
+  for (auto& i: nonbasic_) {
     printf("n%d %d:[%s] %.3f <= %.3f <= %.3f%s\n", var_to_tableau_[i], i,
            this->var2str(i).c_str(), lower_[i], assigns_[i], upper_[i],
            is_broken(i) ? " broken" : "");
@@ -91,8 +74,9 @@ void CpuSolver::print_tableau() const {
 
 void CpuSolver::print_variables() const {
   for (int i = 0; i < nrows_; ++i) {
-    for (int j = 0; j < ncols_; ++j)
+    for (int j = 0; j < ncols_; ++j) {
       printf("%.3f%s", tableau_[i * ncols_ + j], j < ncols_ ? " " : "");
+    }
     printf("\n");
   }
 }
@@ -101,24 +85,40 @@ bool CpuSolver::is_broken(const int idx) const {
   const float ass = get_assignment(idx);
   const float low = get_lower(idx);
   const float upp = get_upper(idx);
-  if (fabs(ass - low) < EPSILON)  // "close enough" to lower bound
+  if (fabs(ass - low) < EPSILON) { // "close enough" to lower bound
     return false;
-  else if (fabs(ass - upp) < EPSILON)  // "close enough" to upper bound
+  } else if (fabs(ass - upp) < EPSILON) { // "close enough" to upper bound
     return false;
-  else if (low != NO_BOUND && ass < low)
+  } else if (low != NO_BOUND && ass < low) {
     return true;
-  else if (upp != NO_BOUND && ass > upp)
+  } else if (upp != NO_BOUND && ass > upp) {
     return true;
+  } else {
+    return false;
+  }
+}
+
+float CpuSolver::get_assignment(const int idx) const {
+  assert(idx < num_vars());
+  if (basic_.find(idx) == basic_.end())
+    return assigns_[idx];
+  int tmp = (*map_assigns_.find(idx)).second;
+  if (tmp == get_step_count())
+    return assigns_[idx];
+  else if (basic_.find(idx) == basic_.end())
+    return assigns_[idx];
   else
-    return false;
+    return compute_assignment(idx);
 }
 
 float CpuSolver::compute_assignment(const int idx) const {
   const int rowIdx = var_to_tableau_[idx];
   const float* const row = &tableau_[rowIdx * ncols_];
   float val = 0.0f;
-#pragma omp parallel for
-  for (int i = 0; i < ncols_; ++i) {
+  int i;
+
+  #pragma omp parallel for reduction(+:val)
+  for (i = 0; i < ncols_; ++i) {
     val += row[i] * assigns_[col_to_var_[i]];
   }
 
@@ -130,8 +130,7 @@ float CpuSolver::compute_assignment(const int idx) const {
 }
 
 bool CpuSolver::check_bounds(int &broken_idx) {
-  for (auto it = basic_.begin(); it != basic_.end(); it++) {
-    const int var = *it;
+  for (const int& var:basic_) {
     if (is_broken(var)) {
       broken_idx = var;
       return false;
@@ -152,17 +151,14 @@ bool CpuSolver::find_suitable(const int broken_idx, int &suitable_idx) {
   }
 }
 
-bool CpuSolver::find_suitable_increase(const int broken_idx, int &suitable_idx,
-                                       const float delta) {
-  for (auto it = nonbasic_.begin(); it != nonbasic_.end(); ++it) {
-    const int var = *it;
-    const float coeff = tableau_[var_to_tableau_[broken_idx] * ncols_
-        + var_to_tableau_[var]];
+bool CpuSolver::find_suitable_increase(const int broken_idx, int &suitable_idx, const float delta) {
+  for (const int& var: nonbasic_) {
+    const float coeff = tableau_[var_to_tableau_[broken_idx] * ncols_ + var_to_tableau_[var]];
     const float low = lower_[var];
     const float upp = upper_[var];
     const float ass = assigns_[var];
-    if ((IS_INCREASABLE(low, upp, ass) && coeff > 0)
-        || (IS_DECREASABLE(low, upp, ass) && coeff < 0)) {
+    if ((IS_INCREASABLE(low, upp, ass) && coeff > 0) ||
+        (IS_DECREASABLE(low, upp, ass) && coeff < 0)) {
       const float theta = delta / coeff;
       assigns_[var] += coeff < 0 ? -theta : theta;
       assigns_[broken_idx] += delta;
@@ -173,17 +169,14 @@ bool CpuSolver::find_suitable_increase(const int broken_idx, int &suitable_idx,
   return false;
 }
 
-bool CpuSolver::find_suitable_decrease(const int broken_idx, int &suitable_idx,
-                                       const float delta) {
-  for (auto it = nonbasic_.begin(); it != nonbasic_.end(); ++it) {
-    const int var = *it;
-    const float coeff = tableau_[var_to_tableau_[broken_idx] * ncols_
-        + var_to_tableau_[var]];
+bool CpuSolver::find_suitable_decrease(const int broken_idx, int &suitable_idx, const float delta) {
+  for (const int& var: nonbasic_) {
+    const float coeff = tableau_[var_to_tableau_[broken_idx] * ncols_ + var_to_tableau_[var]];
     const float low = lower_[var];
     const float upp = upper_[var];
     const float ass = assigns_[var];
-    if ((IS_INCREASABLE(low, upp, ass) && coeff < 0)
-        || (IS_DECREASABLE(low, upp, ass) && coeff > 0)) {
+    if ((IS_INCREASABLE(low, upp, ass) && coeff < 0) ||
+        (IS_DECREASABLE(low, upp, ass) && coeff > 0)) {
       const float theta = delta / coeff;
       assigns_[var] -= coeff < 0 ? theta : -theta;
       assigns_[broken_idx] -= delta;
@@ -197,7 +190,9 @@ bool CpuSolver::find_suitable_decrease(const int broken_idx, int &suitable_idx,
 void CpuSolver::pivot(const int broken_idx, const int suitable_idx) {
   const int pivot_row = var_to_tableau_[broken_idx];
   const int pivot_col = var_to_tableau_[suitable_idx];
-  //printf("Pivot(%d,%d)\n", pivot_row, pivot_col);
+#ifdef DEBUG
+  printf("Pivot(%d,%d)\n", pivot_row, pivot_col);
+#endif
 
   // Save the current pivot element (alpha)
   const int alpha_idx = OFFSET(pivot_row, pivot_col, ncols_);
@@ -213,8 +208,7 @@ void CpuSolver::pivot(const int broken_idx, const int suitable_idx) {
   swap(pivot_row, pivot_col, broken_idx, suitable_idx);
 }
 
-void CpuSolver::swap(const int row, const int col, const int basic_idx,
-                     const int nonbasic_idx) {
+void CpuSolver::swap(const int row, const int col, const int basic_idx, const int nonbasic_idx) {
   col_to_var_[col] = basic_idx;
   row_to_var_[row] = nonbasic_idx;
   var_to_tableau_[basic_idx] = col;
@@ -225,15 +219,14 @@ void CpuSolver::swap(const int row, const int col, const int basic_idx,
   nonbasic_.insert(basic_idx);
 }
 
-void CpuSolver::pivot_update_inner(const float alpha, const int row,
-                                   const int col) {
-#pragma omp parallel for
-  for (int i = 0; i < nrows_; ++i) {
-    if (i == row)
-      continue;
-    for (int j = 0; j < ncols_; ++j) {
-      if (j == col)
-        continue;
+void CpuSolver::pivot_update_inner(const float alpha, const int row, const int col) {
+  int i, j;
+  #pragma omp parallel for private(i, j)
+  for (i = 0; i < nrows_; ++i) {
+    if (i == row) {continue;}
+
+    for (j = 0; j < ncols_; ++j) {
+      if (j == col) {continue;}
       const int delta_row_idx = i * ncols_;
       const int delta_idx = delta_row_idx + j;
       const float delta = tableau_[delta_idx];
@@ -246,19 +239,21 @@ void CpuSolver::pivot_update_inner(const float alpha, const int row,
 
 void CpuSolver::pivot_update_row(const float alpha, const int row) {
   float* beta = &tableau_[row * ncols_];
-#pragma omp parallel for
-  for (int i = 0; i < ncols_; ++i) {
-    *beta = -(*beta) / alpha;
-    beta++;
+  int i;
+
+  #pragma omp parallel for
+  for (i = 0; i < ncols_; ++i) {
+    *(beta + i) = -(*(beta + i)) / alpha;
   }
 }
 
 void CpuSolver::pivot_update_column(const float alpha, const int col) {
   float* gamma = &tableau_[col];
-#pragma omp parallel for
-  for (int i = 0; i < nrows_; ++i) {
-    *gamma /= alpha;
-    gamma += ncols_;
+  int i;
+
+  #pragma omp parallel for
+  for (i = 0; i < nrows_; ++i) {
+    *(gamma + (i * ncols_)) = *(gamma + (i * ncols_)) / alpha;
   }
 }
 
