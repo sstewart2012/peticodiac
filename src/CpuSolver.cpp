@@ -125,7 +125,7 @@ bool CpuSolver<T>::verify_solution() const {
   int row_index = 0;
   for (auto& i: verify_basic_) {
 #ifdef DEBUG
-    std::cout << "Expression " << row_index << ":";
+    std::cout << "Expression " << row_index << ": ";
     std::cout << "Lower bound = " << verify_lower_[i] << " | Upper bound = " << verify_upper_[i] << std::endl;
     std::cout << "    ";
     for (int j = 0; j < ncols_; ++j) {
@@ -147,11 +147,13 @@ bool CpuSolver<T>::verify_solution() const {
       std::cout << "    Verify result = " << verify_result << std::endl;
 #endif
 
-    if (verify_result < verify_lower_[i] || verify_result > verify_upper_[i]) {
+    if (verify_lower_[i] >= 0 && verify_upper_[i] >= 0) {
+      if (verify_result < verify_lower_[i] || verify_result > verify_upper_[i]) {
 #ifdef DEBUG
-      std::cout << "    ERROR: outside the bound!" << std::endl;
+        std::cout << "    ERROR: outside the bound!" << std::endl;
 #endif
-      return false;
+        return false;
+      }
     }
 
     row_index++;

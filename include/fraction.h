@@ -20,7 +20,9 @@ namespace solver {
     Fraction& operator+=(const Fraction& operand);
     Fraction& operator-=(const Fraction& operand);
     bool operator<(const Fraction& operand) const;
+    bool operator<=(const Fraction& operand) const;
     bool operator>(const Fraction& operand) const;
+    bool operator>=(const Fraction& operand) const;
     bool operator!=(const int operand) const;
     bool operator==(const Fraction& operand) const;
     bool operator==(const int operand) const;

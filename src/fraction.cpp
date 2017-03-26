@@ -77,10 +77,22 @@ bool Fraction::operator<(const Fraction& operand) const {
   return leftNumerator < rightNumerator;
 }
 
+bool Fraction::operator<=(const Fraction& operand) const {
+  int leftNumerator = this->numerator * operand.denominator;
+  int rightNumerator = operand.numerator * this->denominator;
+  return leftNumerator <= rightNumerator;
+}
+
 bool Fraction::operator>(const Fraction& operand) const {
   int leftNumerator = this->numerator * operand.denominator;
   int rightNumerator = operand.numerator * this->denominator;
   return leftNumerator > rightNumerator;
+}
+
+bool Fraction::operator>=(const Fraction& operand) const {
+  int leftNumerator = this->numerator * operand.denominator;
+  int rightNumerator = operand.numerator * this->denominator;
+  return leftNumerator >= rightNumerator;
 }
 
 bool Fraction::operator!=(const int operand) const {
