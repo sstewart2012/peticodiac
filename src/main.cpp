@@ -17,6 +17,7 @@
 
 using solver::Solver;
 using solver::SolverType;
+using solver::Representation;
 #ifdef PROFILER_ENABLED
 using solver::SolverProfiler;
 #endif
@@ -177,7 +178,7 @@ void start_solver(const SolverType type, const int num_vars, const int num_const
 }
 
 template <typename T>
-void start_solver(const SolverType type, char const *input_file) {
+void start_float_solver(const SolverType type, char const *input_file) {
   Solver<T>* solver = nullptr;
 
   std::string line;
@@ -189,38 +190,123 @@ void start_solver(const SolverType type, char const *input_file) {
         std::vector<std::string> expression_line = split(line);
 
         if (expression_line[0].compare("p") == 0) {
-          // This is the header, create the solver
-#ifdef DEBUG
+          #ifdef DEBUG
           printf("#### Create solver with %s vars and %s bounds\n", expression_line[2].c_str(), expression_line[3].c_str());
-#endif
+          #endif
+
           solver = Solver<T>::create(type, std::stoi(expression_line[2]), std::stoi(expression_line[3]));
         } else if (expression_line[0].compare("c") == 0) {
-          // This is the constraint, add constraint as a vector<float>
-#ifdef DEBUG
+          #ifdef DEBUG
           printf("#### Add constraint %s\n", line.c_str());
-#endif
+          #endif
+
           std::vector<T> coefficient;
           for (int i = 1; i < int(expression_line.size()); ++i) {
             coefficient.push_back(std::stof(expression_line[i]));
           }
           solver->add_constraint(coefficient);
         } else if (expression_line[0].compare("b") == 0) {
-          // This is the bound, set_bounds with index, lower bound, and upper bound
           int index = std::stoi(expression_line[1]);
           std::vector<std::string> lower = split(expression_line[2], ':');
-          float lower_bound = lower.size() == 1 ? NO_BOUND : std::stof(lower[1]);
+          T lower_bound = lower.size() == 1 ? NO_BOUND : std::stof(lower[1]);
           std::vector<std::string> upper = split(expression_line[3], ':');
-          float upper_bound = upper.size() == 1 ? NO_BOUND : std::stof(upper[1]);
-#ifdef DEBUG
+          T upper_bound = upper.size() == 1 ? NO_BOUND : std::stof(upper[1]);
+
+          #ifdef DEBUG
           printf("#### Set bound %s\n", line.c_str());
           printf("The lower bound = %f and upper bound = %f\n", lower_bound, upper_bound);
-#endif
+          #endif
           solver->set_bounds(index, lower_bound, upper_bound);
         } else if (line.compare("eoa") == 0) {
-          // Start the solver
-#ifdef DEBUG
+          #ifdef DEBUG
           printf("#### End of assertion: start solver\n");
-#endif
+          #endif
+
+          execute<T>(solver);
+          delete solver;
+          solver = nullptr;
+        }
+      }
+    }
+  }
+
+  if (solver != nullptr) {
+    delete solver;
+  }
+}
+
+template <typename T>
+void start_fraction_solver(const SolverType type, char const *input_file) {
+  Solver<T>* solver = nullptr;
+
+  std::string line;
+  std::ifstream peticodiac_file;
+  peticodiac_file.open(input_file);
+  if (peticodiac_file.is_open()) {
+    while (getline(peticodiac_file, line)) {
+      if (line != "" && strcmp(line.substr(0, 1).c_str(), "#") != 0 ) {
+        std::vector<std::string> expression_line = split(line);
+
+        if (expression_line[0].compare("p") == 0) {
+          #ifdef DEBUG
+          printf("#### Create solver with %s vars and %s bounds\n", expression_line[2].c_str(), expression_line[3].c_str());
+          #endif
+
+          solver = Solver<T>::create(type, std::stoi(expression_line[2]), std::stoi(expression_line[3]));
+        } else if (expression_line[0].compare("c") == 0) {
+          #ifdef DEBUG
+          printf("#### Add constraint %s\n", line.c_str());
+          #endif
+
+          std::vector<T> coefficient;
+          for (int i = 1; i < int(expression_line.size()); ++i) {
+            std::vector<std::string> fraction = split(expression_line[i], '/');
+            int numerator = std::stoi(fraction[0]);
+            int denominator = std::stoi(fraction[1]);
+            std::cout << "fraction = numerator = " << numerator << " deno = " << denominator << std::endl;
+            T variable_coefficient(numerator, denominator);
+            std::cout << " coeff = " << variable_coefficient << std::endl;
+            coefficient.push_back(variable_coefficient);
+          }
+          solver->add_constraint(coefficient);
+        } else if (expression_line[0].compare("b") == 0) {
+          int index = std::stoi(expression_line[1]);
+          T lower_bound;
+          T upper_bound;
+          std::vector<std::string> lower = split(expression_line[2], ':');
+          if (lower.size() == 1) {
+            T lower_bound_value(NO_BOUND);
+            lower_bound = lower_bound_value;
+          } else {
+            std::vector<std::string> fraction = split(lower[1], '/');
+            int numerator = std::stoi(fraction[0]);
+            int denominator = std::stoi(fraction[1]);
+            T lower_bound_value(numerator, denominator);
+            lower_bound = lower_bound_value;
+          }
+
+          std::vector<std::string> upper = split(expression_line[3], ':');
+          if (upper.size() == 1) {
+            T upper_bound_value(NO_BOUND);
+            upper_bound = upper_bound_value;
+          } else {
+            std::vector<std::string> fraction = split(upper[1], '/');
+            int numerator = std::stoi(fraction[0]);
+            int denominator = std::stoi(fraction[1]);
+            T upper_bound_value(numerator, denominator);
+            upper_bound = upper_bound_value;
+          }
+
+          #ifdef DEBUG
+          std::cout << "#### Set bound " << line.c_str() << std::endl;
+          std::cout << "The lower bound = " << lower_bound << " and upper bound = " << upper_bound << std::endl;
+          #endif
+          solver->set_bounds(index, lower_bound, upper_bound);
+        } else if (line.compare("eoa") == 0) {
+          #ifdef DEBUG
+          std::cout << "#### End of assertion: start solver" << std::endl;
+          #endif
+
           execute<T>(solver);
           delete solver;
           solver = nullptr;
@@ -276,7 +362,33 @@ int main(const int argc, const char** argv) {
   }
 
   if (input_file) {
-    start_solver<float>(type, input_file);
+    Representation representation;
+
+    std::string line;
+    std::ifstream peticodiac_file;
+    peticodiac_file.open(input_file);
+    if (peticodiac_file.is_open()) {
+      while (getline(peticodiac_file, line)) {
+        if (line != "" && strcmp(line.substr(0, 1).c_str(), "#") != 0 ) {
+          std::vector<std::string> expression_line = split(line);
+          if (expression_line[0].compare("c") == 0) {
+            std::string coefficient = expression_line[1];
+            if (coefficient.find("/") != std::string::npos) {
+              representation = Representation::EXACT;
+            } else {
+              representation = Representation::INEXACT;
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    if (representation == Representation::EXACT) {
+      start_fraction_solver<solver::Fraction>(type, input_file);
+    } else {
+      start_float_solver<float>(type, input_file);
+    }
   } else {
     //start_solver(type, num_vars, num_constrs);
     start_solver_test_float<float>(type, num_vars, num_constrs);

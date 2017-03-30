@@ -30,6 +30,11 @@ namespace solver {
     CUDA
   };
 
+  enum Representation {
+    EXACT,
+    INEXACT
+  };
+
   template <typename T>
   class AbstractSolver {
    public:
