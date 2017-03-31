@@ -167,6 +167,12 @@ bool CpuSolver<T>::is_broken(const int idx) const {
   const T ass = get_assignment(idx);
   const T low = get_lower(idx);
   const T upp = get_upper(idx);
+
+  #ifdef DEBUG
+  std::cout << "\n    >> low = " << low << " and ass = " << ass << " and upp = " << upp << std::endl;
+  std::cout << "    >> ass - low = " << ass - low << " and ass - upp = " << ass - upp << " and epsilon = " << EPSILON << std::endl;
+  #endif
+
   if (typeid(ass).name() == typeid(float).name()) {
     if ((ass - low) < EPSILON && (ass - low) > -EPSILON) { // "close enough" to lower bound
       return false;
