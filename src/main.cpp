@@ -263,9 +263,7 @@ void start_fraction_solver(const SolverType type, char const *input_file) {
             std::vector<std::string> fraction = split(expression_line[i], '/');
             int numerator = std::stoi(fraction[0]);
             int denominator = std::stoi(fraction[1]);
-            std::cout << "fraction = numerator = " << numerator << " deno = " << denominator << std::endl;
             T variable_coefficient(numerator, denominator);
-            std::cout << " coeff = " << variable_coefficient << std::endl;
             coefficient.push_back(variable_coefficient);
           }
           solver->add_constraint(coefficient);
