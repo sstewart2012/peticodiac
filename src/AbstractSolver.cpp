@@ -18,7 +18,7 @@ bool solver::AbstractSolver<T>::solve() {
       std::cout << get_step_count() << " steps" << std::endl;
     }
     double check_time = time + cpu_second();
-    if (check_time >= 10.0) {
+    if (check_time >= 100.0) {
       printf("Bailing at %.2f seconds...\n", check_time);
       return false;
     }

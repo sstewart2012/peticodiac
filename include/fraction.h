@@ -8,8 +8,8 @@ namespace solver {
   class Fraction {
   public:
     Fraction();
-    Fraction(int numerator);
-    Fraction(int numerator, int denominator);
+    Fraction(long long int numerator);
+    Fraction(long long int numerator, long long int denominator);
     ~Fraction();
     friend std::ostream& operator<<(std::ostream& os, const Fraction obj);
     Fraction operator*(const Fraction& operand) const;
@@ -23,18 +23,18 @@ namespace solver {
     bool operator<=(const Fraction& operand) const;
     bool operator>(const Fraction& operand) const;
     bool operator>=(const Fraction& operand) const;
-    bool operator!=(const int operand) const;
+    bool operator!=(const long long int operand) const;
     bool operator==(const Fraction& operand) const;
-    bool operator==(const int operand) const;
+    bool operator==(const long long int operand) const;
     void reduce(Fraction& fraction) const;
 
   private:
-    int numerator;
-    int denominator;
-    int gcd(int num1, int num2) const;
+    long long int numerator;
+    long long int denominator;
+    long long int gcd(long long int num1, long long int num2) const;
   };
 
-  Fraction operator/(int operand1, const Fraction& operand2);
+  Fraction operator/(long long int operand1, const Fraction& operand2);
 }
 
 #endif /* FRACTION_H_ */
