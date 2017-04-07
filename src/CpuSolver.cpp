@@ -144,13 +144,26 @@ bool CpuSolver<T>::verify_solution() const {
     }
 
 #ifdef DEBUG
-      std::cout << "    Verify result = " << verify_result << std::endl;
+    std::cout << "    Verify result = " << verify_result << std::endl;
 #endif
 
     if (verify_lower_[i] >= 0 && verify_upper_[i] >= 0) {
-      if (verify_result < verify_lower_[i] || verify_result > verify_upper_[i]) {
+      if (verify_result < verify_lower_[i]) {
 #ifdef DEBUG
-        std::cout << "    ERROR: outside the bound!" << std::endl;
+        T error_size = verify_lower_[i] - verify_result;
+        std::cout << "    ERROR: outside the lower bound!" << std::endl;
+        std::cout << "           Actual result:   " << verify_result << std::endl;
+        std::cout << "           Expected result: " << verify_lower_[i] << std::endl;
+        std::cout << "           Error size:      " << error_size << std::endl;
+#endif
+        return false;
+      } else if (verify_result > verify_upper_[i]) {
+#ifdef DEBUG
+        T error_size = verify_result - verify_upper_[i];
+        std::cout << "    ERROR: outside the upper bound!" << std::endl;
+        std::cout << "           Actual result:   " << verify_result << std::endl;
+        std::cout << "           Expected result: " << verify_upper_[i] << std::endl;
+        std::cout << "           Error size:      " << error_size << std::endl;
 #endif
         return false;
       }

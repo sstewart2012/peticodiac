@@ -57,6 +57,13 @@ Fraction Fraction::operator-() const {
   return result;
 }
 
+Fraction& Fraction::operator=(const Fraction& operand) {
+  this->numerator = operand.numerator;
+  this->denominator = operand.denominator;
+  Fraction::reduce(*this);
+  return *this;
+}
+
 Fraction& Fraction::operator+=(const Fraction& operand) {
   this->numerator = this->numerator * operand.denominator + operand.numerator * this->denominator;
   this->denominator = this->denominator * operand.denominator;
