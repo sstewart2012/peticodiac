@@ -8,13 +8,14 @@
 #include "Solver.h"
 
 namespace solver {
+template <typename T>
 class CpuSolver : public Solver {
   public:
     CpuSolver(const int num_vars, const int max_num_constrs);
     ~CpuSolver();
-    virtual bool add_constraint(const std::vector<float> constr) override;
-    virtual void set_bounds(const int idx, const float lower, const float upper) override;
-    virtual std::vector<float> solution() const override;
+    virtual bool add_constraint(const std::vector<T> constr) override;
+    virtual void set_bounds(const int idx, const T lower, const T upper) override;
+    virtual std::vector<T> solution() const override;
     virtual void print_tableau() const override;
     virtual void print_variables() const override;
     virtual inline int num_problem_vars() const override {
@@ -35,25 +36,25 @@ class CpuSolver : public Solver {
     virtual bool check_bounds(int &broken_idx) override;
     virtual bool find_suitable(const int broken_idx, int &suitable_idx) override;
     virtual void pivot(const int broken_idx, const int suitable_idx) override;
-    virtual float compute_assignment(const int idx) const;
+    virtual T compute_assignment(const int idx) const;
     virtual void swap(const int row, const int col, const int basic_idx, const int nonbasic_idx);
-    virtual float get_assignment(const int idx) const;
+    virtual T get_assignment(const int idx) const;
     virtual inline void update_assignment() override {
       incr_step_count();
     }
-    virtual inline float get_lower(const int idx) const {
+    virtual inline T get_lower(const int idx) const {
       return lower_[idx];
     }
-    virtual inline float get_upper(const int idx) const {
+    virtual inline T get_upper(const int idx) const {
       return upper_[idx];
     }
 
   private:
-    bool find_suitable_increase(const int broken_idx, int &suitable_idx, const float delta);
-    bool find_suitable_decrease(const int broken_idx, int &suitable_idx, const float delta);
-    void pivot_update_inner(const float alpha, const int row, const int col);
-    void pivot_update_row(const float alpha, const int row);
-    void pivot_update_column(const float alpha, const int col);
+    bool find_suitable_increase(const int broken_idx, int &suitable_idx, const T delta);
+    bool find_suitable_decrease(const int broken_idx, int &suitable_idx, const T delta);
+    void pivot_update_inner(const T alpha, const int row, const int col);
+    void pivot_update_row(const T alpha, const int row);
+    void pivot_update_column(const T alpha, const int col);
 
   protected:
     const int ncols_;
@@ -62,10 +63,10 @@ class CpuSolver : public Solver {
     int* const col_to_var_ = new int[ncols_];
     int* const row_to_var_ = new int[nrows_];
     int* const var_to_tableau_ = new int[nrows_ + ncols_];
-    float* const tableau_ = new float[nrows_ * ncols_];
-    float* const assigns_ = new float[nrows_ + ncols_];
-    float* const lower_ = new float[nrows_ + ncols_];
-    float* const upper_ = new float[nrows_ + ncols_];
+    T* const tableau_ = new T[nrows_ * ncols_];
+    T* const assigns_ = new T[nrows_ + ncols_];
+    T* const lower_ = new T[nrows_ + ncols_];
+    T* const upper_ = new T[nrows_ + ncols_];
     std::set<int> basic_;
     std::set<int> nonbasic_;
     std::map<int, int> map_assigns_;

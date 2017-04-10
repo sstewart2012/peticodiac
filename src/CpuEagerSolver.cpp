@@ -1,20 +1,25 @@
 #include "CpuEagerSolver.h"
 
-solver::CpuEagerSolver::CpuEagerSolver(const int num_vars, const int max_num_constrs)
-    : CpuSolver(num_vars, max_num_constrs) {}
+template <typename T>
+solver::CpuEagerSolver<T>::CpuEagerSolver(const int num_vars, const int max_num_constrs)
+    : CpuSolver<T>(num_vars, max_num_constrs) {}
 
-solver::CpuEagerSolver::~CpuEagerSolver() {}
+template <typename T>
+solver::CpuEagerSolver<T>::~CpuEagerSolver() {}
 
-void solver::CpuEagerSolver::update_assignment() {
-  incr_step_count();
+template <typename T>
+void solver::CpuEagerSolver<T>::update_assignment() {
+  this->incr_step_count();
 
   int i, j;
   #pragma omp parallel for private(i, j)
-  for (i = 0; i < nrows_; ++i) {
+  for (i = 0; i < this->nrows_; ++i) {
     float accum = 0.0f;
-    for (j = 0; j < ncols_; ++j) {
-      accum += tableau_[i * ncols_ + j] * assigns_[col_to_var_[j]];
+    for (j = 0; j < this->ncols_; ++j) {
+      accum += this->tableau_[i * this->ncols_ + j] * this->assigns_[this->col_to_var_[j]];
     }
-    assigns_[row_to_var_[i]] = accum;
+    this->assigns_[this->row_to_var_[i]] = accum;
   }
 }
+
+template class solver::CpuEagerSolver<float>;
