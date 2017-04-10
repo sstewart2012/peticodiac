@@ -11,7 +11,7 @@ CpuSolver<T>::CpuSolver(const int num_vars, const int max_num_constrs)
   for (i = 0; i < ncols_; ++i) {
     col_to_var_[i] = i;
     var_to_tableau_[i] = i;
-    lower_[i] = 0.0f;
+    lower_[i] = NO_BOUND;
     upper_[i] = NO_BOUND;
     assigns_[i] = 0.0f;
     nonbasic_.insert(i);
