@@ -19,6 +19,7 @@ namespace solver {
     virtual std::vector<T> solution() const override;
     virtual void print_tableau() const override;
     virtual void print_variables() const override;
+    virtual bool verify_solution() const override;
     virtual inline int num_problem_vars() const override {
       return ncols_;
     }
@@ -71,6 +72,10 @@ namespace solver {
     std::set<int> basic_;
     std::set<int> nonbasic_;
     std::map<int, int> map_assigns_;
+    T* const verify_tableau_ = new T[nrows_ * ncols_];
+    T* const verify_lower_ = new T[nrows_ + ncols_];
+    T* const verify_upper_ = new T[nrows_ + ncols_];
+    std::set<int> verify_basic_;
   };
 }  // namespace solver
 
