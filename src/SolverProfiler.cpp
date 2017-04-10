@@ -1,59 +1,73 @@
 #include "SolverProfiler.h"
 
 namespace solver {
-  SolverProfiler::SolverProfiler(Solver &solver): solver(solver) {}
+  template <typename T>
+  SolverProfiler<T>::SolverProfiler(Solver<T> &solver): solver(solver) {}
 
-  SolverProfiler::~SolverProfiler() {}
+  template <typename T>
+  SolverProfiler<T>::~SolverProfiler() {}
 
-  bool SolverProfiler::add_constraint(const std::vector<float> constr) {
+  template <typename T>
+  bool SolverProfiler<T>::add_constraint(const std::vector<T> constr) {
     return solver.add_constraint(constr);
   }
 
-  void SolverProfiler::set_bounds(const int idx, const float lower, const float upper) {
+  template <typename T>
+  void SolverProfiler<T>::set_bounds(const int idx, const T lower, const T upper) {
     return solver.set_bounds(idx, lower, upper);
   }
 
-  std::vector<float> SolverProfiler::solution() const {
+  template <typename T>
+  std::vector<T> SolverProfiler<T>::solution() const {
     return solver.solution();
   }
 
-  int SolverProfiler::num_problem_vars() const {
+  template <typename T>
+  int SolverProfiler<T>::num_problem_vars() const {
     return solver.num_problem_vars();
   }
 
-  int SolverProfiler::num_additional_vars() const {
+  template <typename T>
+  int SolverProfiler<T>::num_additional_vars() const {
     return solver.num_additional_vars();
   }
 
-  int SolverProfiler::num_vars() const {
+  template <typename T>
+  int SolverProfiler<T>::num_vars() const {
     return solver.num_vars();
   }
 
-  int SolverProfiler::num_constraints() const {
+  template <typename T>
+  int SolverProfiler<T>::num_constraints() const {
     return solver.num_constraints();
   }
 
-  void SolverProfiler::print_tableau() const {
+  template <typename T>
+  void SolverProfiler<T>::print_tableau() const {
     return solver.print_tableau();
   }
 
-  void SolverProfiler::print_variables() const {
+  template <typename T>
+  void SolverProfiler<T>::print_variables() const {
     return solver.print_variables();
   }
 
-  int SolverProfiler::get_step_count() const {
+  template <typename T>
+  int SolverProfiler<T>::get_step_count() const {
     return solver.get_step_count();
   }
 
-  bool SolverProfiler::solve() {
+  template <typename T>
+  bool SolverProfiler<T>::solve() {
     double time = -cpu_second();
-    bool result = Solver::solve();
+    bool result = Solver<T>::solve();
     time += cpu_second();
     time_solve += time;
     return result;
   }
 
-  bool SolverProfiler::check_bounds(int &broken_idx) {
+  template <typename T>
+  bool SolverProfiler<T>::check_bounds(int &broken_idx) {
     double time = -cpu_second();
     bool result = solver.check_bounds(broken_idx);
     time += cpu_second();
@@ -61,7 +75,8 @@ namespace solver {
     return result;
   }
 
-  bool SolverProfiler::find_suitable(const int broken_idx, int &suitable_idx) {
+  template <typename T>
+  bool SolverProfiler<T>::find_suitable(const int broken_idx, int &suitable_idx) {
     double time = -cpu_second();
     bool result = solver.find_suitable(broken_idx, suitable_idx);
     time += cpu_second();
@@ -69,14 +84,16 @@ namespace solver {
     return result;
   }
 
-  void SolverProfiler::pivot(const int broken_idx, const int suitable_idx) {
+  template <typename T>
+  void SolverProfiler<T>::pivot(const int broken_idx, const int suitable_idx) {
     double time = -cpu_second();
     solver.pivot(broken_idx, suitable_idx);
     time += cpu_second();
     time_pivot += time;
   }
 
-  void SolverProfiler::update_assignment() {
+  template <typename T>
+  void SolverProfiler<T>::update_assignment() {
     double time = -cpu_second();
     solver.update_assignment();
     time += cpu_second();

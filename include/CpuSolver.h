@@ -6,10 +6,11 @@
 #include <omp.h>
 
 #include "Solver.h"
+#include "fraction.h"
 
 namespace solver {
-template <typename T>
-class CpuSolver : public Solver {
+  template <typename T>
+  class CpuSolver : public Solver<T> {
   public:
     CpuSolver(const int num_vars, const int max_num_constrs);
     ~CpuSolver();
@@ -40,7 +41,7 @@ class CpuSolver : public Solver {
     virtual void swap(const int row, const int col, const int basic_idx, const int nonbasic_idx);
     virtual T get_assignment(const int idx) const;
     virtual inline void update_assignment() override {
-      incr_step_count();
+      this->incr_step_count();
     }
     virtual inline T get_lower(const int idx) const {
       return lower_[idx];

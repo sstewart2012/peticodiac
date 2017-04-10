@@ -1,8 +1,10 @@
 #include "AbstractSolver.h"
 
-solver::AbstractSolver::~AbstractSolver() {}
+template <typename T>
+solver::AbstractSolver<T>::~AbstractSolver() {}
 
-bool solver::AbstractSolver::solve() {
+template <typename T>
+bool solver::AbstractSolver<T>::solve() {
   double time = -cpu_second();
   int broken_idx = -1;
   int suitable_idx = -1;
@@ -13,7 +15,7 @@ bool solver::AbstractSolver::solve() {
     pivot(broken_idx, suitable_idx);
     update_assignment();
     if (get_step_count() % 1000 == 0) {
-      printf("%d steps\n", get_step_count());
+      std::cout << get_step_count() << " steps" << std::endl;
     }
     double check_time = time + cpu_second();
     if (check_time >= 10.0) {
@@ -28,3 +30,6 @@ bool solver::AbstractSolver::solve() {
   }
   return true;
 }
+
+template class solver::AbstractSolver<float>;
+template class solver::AbstractSolver<solver::Fraction>;

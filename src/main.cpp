@@ -21,10 +21,17 @@ using solver::SolverType;
 using solver::SolverProfiler;
 #endif
 
-void print_solution(const Solver &s) {
-  const std::vector<float> solution = s.solution();
+template <typename T>
+void print_solution(Solver<T> &s) {
+  const std::vector<T> solution = s.solution();
   for (int i = 0; i < int(solution.size()); ++i) {
-    printf("x%d=%.3f%s", i, solution[i], i + 1 < int(solution.size()) ? " " : "\n");
+    // printf("x%d=%.3f%s", i, solution[i], i + 1 < int(solution.size()) ? " " : "\n");
+    std::cout << i << "=" << solution[i];
+    if ((i + 1) < int(solution.size())) {
+      std::cout << " ";
+    } else {
+      std::cout << endl;
+    }
   }
 }
 
@@ -41,7 +48,8 @@ std::vector<std::string> split(const std::string &s, char delim = ' ') {
   return tokens;
 }
 
-void execute(Solver* const solver) {
+template <typename T>
+void execute(Solver<T>* const solver) {
 #ifdef DEBUG
   solver->print_variables();
   printf("\n");
@@ -61,34 +69,73 @@ void execute(Solver* const solver) {
   printf("\n");
   if (solver_val) {
     printf("SAT Solution:\n");
-    print_solution(*solver);
+    print_solution<T>(*solver);
     printf("\n");
   }
 }
 
+template <typename T>
 void start_solver_test(const SolverType type, const int num_var, const int num_constr) {
   printf("In start_solver");
-  Solver* solver = nullptr;
-  int num_vars = 1;
-  int num_constrs = 1;
-  solver = Solver::create(type, num_vars, num_constrs);
+  Solver<T>* solver = nullptr;
+  int num_vars = 2;
+  int num_constrs = 2;
+  solver = Solver<T>::create(type, num_vars, num_constrs);
 
-  std::vector<float> constr = {1.0};
+  solver::Fraction constraint1(3);
+  solver::Fraction constraint2(2);
+  std::vector<T> constr = {constraint1, constraint2};
   solver->add_constraint(constr);
-  const float low = 1.0E-7;
-  const float upp = 111.0;
-  printf("The lower bound = %f and upper bound = %f\n", low, upp);
-  solver->set_bounds(num_vars, low, upp);
-  execute(solver);
+  solver::Fraction lower(10);
+  solver::Fraction upper(40);
+  const T low = lower;
+  const T upp = upper;
+  std::cout << "The lower bound = " << low << " and upper bound = " << upp << endl;
+  //printf("The lower bound = %f and upper bound = %f\n", low, upp);
+  solver->set_bounds(2, low, upp);
+
+  solver::Fraction constraint3(6);
+  solver::Fraction constraint4(8);
+  std::vector<T> constr2 = {constraint3, constraint4};
+  solver->add_constraint(constr2);
+  solver::Fraction lower2(NO_BOUND);
+  solver::Fraction upper2(60);
+  const T low2 = lower2;
+  const T upp2 = upper2;
+  std::cout << "The lower bound = " << low2 << " and upper bound = " << upp2 << endl;
+  //printf("The lower bound = %f and upper bound = %f\n", low, upp);
+  solver->set_bounds(3, low2, upp2);
+
+  execute<T>(solver);
   delete solver;
 }
 
+// template <typename T>
+// void start_solver_test(const SolverType type, const int num_var, const int num_constr) {
+//   printf("In start_solver");
+//   Solver<T>* solver = nullptr;
+//   int num_vars = 1;
+//   int num_constrs = 1;
+//   solver = Solver<T>::create(type, num_vars, num_constrs);
+//
+//   std::vector<T> constr = {5.0};
+//   solver->add_constraint(constr);
+//   const T low = 5.0f;
+//   const T upp = 5.0f;
+//   std::cout << "The lower bound = " << low << " and upper bound = " << upp << endl;
+//   //printf("The lower bound = %f and upper bound = %f\n", low, upp);
+//   solver->set_bounds(num_vars, low, upp);
+//   execute<T>(solver);
+//   delete solver;
+// }
+
+template <typename T>
 void start_solver(const SolverType type, const int num_vars, const int num_constrs) {
-  Solver* solver = nullptr;
-  solver = Solver::create(type, num_vars, num_constrs);
+  Solver<T>* solver = nullptr;
+  solver = Solver<T>::create(type, num_vars, num_constrs);
 
   for (int i = 0; i < num_constrs; ++i) {
-    std::vector<float> constr = ::random_instance(num_vars, 0, 11);
+    std::vector<T> constr = ::random_instance(num_vars, 0, 11);
     solver->add_constraint(constr);
     const float* const bounds = ::random_float(2, 1, 11);
     const float low = std::min(bounds[0], bounds[1]);
@@ -100,12 +147,13 @@ void start_solver(const SolverType type, const int num_vars, const int num_const
     }
   }
 
-  execute(solver);
+  execute<T>(solver);
   delete solver;
 }
 
+template <typename T>
 void start_solver(const SolverType type, char const *input_file) {
-  Solver* solver = nullptr;
+  Solver<T>* solver = nullptr;
 
   std::string line;
   std::ifstream peticodiac_file;
@@ -120,13 +168,13 @@ void start_solver(const SolverType type, char const *input_file) {
 #ifdef DEBUG
           printf("#### Create solver with %s vars and %s bounds\n", expression_line[2].c_str(), expression_line[3].c_str());
 #endif
-          solver = Solver::create(type, std::stoi(expression_line[2]), std::stoi(expression_line[3]));
+          solver = Solver<T>::create(type, std::stoi(expression_line[2]), std::stoi(expression_line[3]));
         } else if (expression_line[0].compare("c") == 0) {
           // This is the constraint, add constraint as a vector<float>
 #ifdef DEBUG
           printf("#### Add constraint %s\n", line.c_str());
 #endif
-          std::vector<float> coefficient;
+          std::vector<T> coefficient;
           for (int i = 1; i < int(expression_line.size()); ++i) {
             coefficient.push_back(std::stof(expression_line[i]));
           }
@@ -148,7 +196,7 @@ void start_solver(const SolverType type, char const *input_file) {
 #ifdef DEBUG
           printf("#### End of assertion: start solver\n");
 #endif
-          execute(solver);
+          execute<T>(solver);
           delete solver;
           solver = nullptr;
         }
@@ -203,10 +251,11 @@ int main(const int argc, const char** argv) {
   }
 
   if (input_file) {
-    start_solver(type, input_file);
+    start_solver<float>(type, input_file);
   } else {
     //start_solver(type, num_vars, num_constrs);
-    start_solver_test(type, num_vars, num_constrs);
+    //start_solver_test<float>(type, num_vars, num_constrs);
+    start_solver_test<solver::Fraction>(type, num_vars, num_constrs);
   }
 
   exit(EXIT_SUCCESS);

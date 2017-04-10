@@ -4,14 +4,15 @@
 #include "Solver.h"
 
 namespace solver {
-  class SolverProfiler : public Solver {
+  template <typename T>
+  class SolverProfiler : public Solver<T> {
   public:
-    SolverProfiler(Solver &solver);
+    SolverProfiler(Solver<T> &solver);
     virtual ~SolverProfiler();
 
-    virtual bool add_constraint(const std::vector<float> constr) override;
-    virtual void set_bounds(const int idx, const float lower, const float upper) override;
-    virtual std::vector<float> solution() const override;
+    virtual bool add_constraint(const std::vector<T> constr) override;
+    virtual void set_bounds(const int idx, const T lower, const T upper) override;
+    virtual std::vector<T> solution() const override;
     virtual int num_problem_vars() const override;
     virtual int num_additional_vars() const override;
     virtual int num_vars() const override;
@@ -35,7 +36,7 @@ namespace solver {
     double time_solve = 0.0;
 
    private:
-    Solver &solver;
+    Solver<T> &solver;
   };
 }  // namespace solver
 
