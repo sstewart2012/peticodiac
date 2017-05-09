@@ -17,6 +17,7 @@ namespace solver {
     Fraction operator+(const Fraction& operand) const;
     Fraction operator-(const Fraction& operand) const;
     Fraction operator-() const;
+    Fraction& operator=(const Fraction& operand);
     Fraction& operator+=(const Fraction& operand);
     Fraction& operator-=(const Fraction& operand);
     bool operator<(const Fraction& operand) const;
